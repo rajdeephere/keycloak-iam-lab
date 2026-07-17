@@ -1,0 +1,91 @@
+{
+  "info": {
+    "name": "Keycloak Interview Prep",
+    "description": "Hands-on Keycloak Developer prep. One folder per module. Grows module by module.\n\nSetup: import this collection AND the environment file (postman/keycloak-local.postman_environment.json), then select the 'Keycloak Local' environment.\n\nToken requests auto-save the access_token to environment variables so downstream requests inherit it.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Module 1 — Keycloak Bootstrap",
+      "description": "Realm discovery, keys, and the machine-to-machine (client credentials) grant.",
+      "item": [
+        {
+          "name": "OIDC Discovery (well-known)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/realms/{{realm}}/.well-known/openid-configuration",
+              "host": ["{{baseUrl}}"],
+              "path": ["realms", "{{realm}}", ".well-known", "openid-configuration"]
+            },
+            "description": "The OIDC discovery document. Every other endpoint (token, authz, jwks, userinfo, introspection, end-session) is advertised here. Point clients at this URL, not hard-coded paths."
+          },
+          "response": []
+        },
+        {
+          "name": "JWKS (public signing keys)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/realms/{{realm}}/protocol/openid-connect/certs",
+              "host": ["{{baseUrl}}"],
+              "path": ["realms", "{{realm}}", "protocol", "openid-connect", "certs"]
+            },
+            "description": "Public keys resource servers use to verify JWT signatures locally (no call to Keycloak per request). Refreshed by clients on key rotation."
+          },
+          "response": []
+        },
+        {
+          "name": "Token — Client Credentials (backend-worker)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "if (json.access_token) {",
+                  "  pm.environment.set('m2m_access_token', json.access_token);",
+                  "  pm.environment.set('access_token', json.access_token);",
+                  "  console.log('Saved client-credentials token to {{access_token}} and {{m2m_access_token}}');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/x-www-form-urlencoded" }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "grant_type", "value": "client_credentials", "type": "text" },
+                { "key": "client_id", "value": "backend-worker", "type": "text" },
+                { "key": "client_secret", "value": "{{backendWorkerSecret}}", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": ["{{baseUrl}}"],
+              "path": ["realms", "{{realm}}", "protocol", "openid-connect", "token"]
+            },
+            "description": "Machine-to-machine grant. No user, no browser. The confidential client authenticates AS ITSELF using its secret and gets a token for its service account. Test script auto-saves the token."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "note",
+      "value": "Prefer the environment file for values. These are fallbacks.",
+      "type": "string"
+    }
+  ]
+}

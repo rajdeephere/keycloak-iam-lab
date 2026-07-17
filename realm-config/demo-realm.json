@@ -1,0 +1,92 @@
+{
+  "realm": "demo",
+  "enabled": true,
+  "displayName": "Demo Realm (interview prep)",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+
+  "roles": {
+    "realm": [
+      { "name": "app_user",  "description": "Standard authenticated application user" },
+      { "name": "app_admin", "description": "Administrative user with elevated privileges" }
+    ]
+  },
+
+  "clients": [
+    {
+      "clientId": "product-service",
+      "name": "Product Service (resource server)",
+      "description": "Backend REST API. Validates tokens; does not initiate login.",
+      "enabled": true,
+      "bearerOnly": true,
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false
+    },
+    {
+      "clientId": "web-app",
+      "name": "Web App (public SPA client)",
+      "description": "Browser client. Authorization Code + PKCE. No client secret.",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "http://localhost:8081/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "http://localhost:8081"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    },
+    {
+      "clientId": "backend-worker",
+      "name": "Backend Worker (confidential, client credentials)",
+      "description": "Machine-to-machine client. Client Credentials grant.",
+      "enabled": true,
+      "publicClient": false,
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "secret": "backend-worker-secret"
+    }
+  ],
+
+  "users": [
+    {
+      "username": "alice",
+      "enabled": true,
+      "email": "alice@demo.local",
+      "emailVerified": true,
+      "firstName": "Alice",
+      "lastName": "User",
+      "credentials": [
+        { "type": "password", "value": "password", "temporary": false }
+      ],
+      "realmRoles": ["app_user"]
+    },
+    {
+      "username": "bob",
+      "enabled": true,
+      "email": "bob@demo.local",
+      "emailVerified": true,
+      "firstName": "Bob",
+      "lastName": "Admin",
+      "credentials": [
+        { "type": "password", "value": "password", "temporary": false }
+      ],
+      "realmRoles": ["app_user", "app_admin"]
+    }
+  ]
+}

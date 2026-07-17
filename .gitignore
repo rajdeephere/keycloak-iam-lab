@@ -1,0 +1,48 @@
+# --- Private / not for the public repo ---
+Keycloak-Developer-JD.txt
+*.local
+.env
+*.env.local
+
+# --- Java / Maven ---
+target/
+build/
+*.class
+*.jar
+*.war
+!**/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.jar
+dependency-reduced-pom.xml
+
+# --- Gradle (in case any lab uses it) ---
+.gradle/
+
+# --- IDE ---
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+*.code-workspace
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Logs / temp ---
+*.log
+logs/
+tmp/
+
+# --- Docker / local data ---
+# (named volumes live in Docker, not the repo; ignore any local bind dirs)
+pgdata/
+docker/.data/
+
+# --- Secrets that shouldn't be committed ---
+# Postman environment holds a dev-only secret; safe here, but keep real ones out
+*secret*.local.json
