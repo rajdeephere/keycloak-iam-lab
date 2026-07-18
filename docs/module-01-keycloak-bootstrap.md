@@ -28,7 +28,7 @@ A production-shaped local Keycloak stack:
 ```
 
 **Verified working:**
-- OIDC discovery: `http://localhost:8080/realms/demo/.well-known/openid-configuration`
+- OIDC discovery: `http://localhost:8085/realms/demo/.well-known/openid-configuration`
 - Minted a real access token via **client-credentials** grant and decoded the JWT.
 
 ---
@@ -134,13 +134,13 @@ docker compose down -v       # wipe Postgres volume (forces realm re-import)
 docker compose logs -f keycloak
 
 # Admin console
-#   http://localhost:8080  →  admin / admin
+#   http://localhost:8085  →  admin / admin
 
 # OIDC discovery
-curl -s http://localhost:8080/realms/demo/.well-known/openid-configuration | python -m json.tool
+curl -s http://localhost:8085/realms/demo/.well-known/openid-configuration | python -m json.tool
 
 # Get a machine token (client credentials)
-curl -s -X POST http://localhost:8080/realms/demo/protocol/openid-connect/token \
+curl -s -X POST http://localhost:8085/realms/demo/protocol/openid-connect/token \
   -d grant_type=client_credentials \
   -d client_id=backend-worker \
   -d client_secret=backend-worker-secret

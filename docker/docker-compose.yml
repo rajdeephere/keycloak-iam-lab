@@ -34,7 +34,9 @@ services:
       KC_HOSTNAME_STRICT: "false"
       KC_HEALTH_ENABLED: "true"
     ports:
-      - "8080:8080"
+      # Host 8085 -> container 8080. Host 8080 is taken by a local Apache (httpd),
+      # so we publish Keycloak on 8085 to avoid the port collision.
+      - "8085:8080"
     volumes:
       # realm JSONs placed here are imported on first start (--import-realm)
       - ../realm-config:/opt/keycloak/data/import
