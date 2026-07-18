@@ -1,0 +1,32 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: product-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Spring auto-discovers JWKS + validates issuer/signature/exp from this URI.
+          # Keycloak is published on host port 8085 (8080 is taken by a local Apache).
+          issuer-uri: http://localhost:8085/realms/demo
+
+# Custom app config: which audience THIS resource server will accept.
+app:
+  security:
+    expected-audience: product-service
+
+# Expose only health; keep the rest closed by default.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    org.springframework.security: INFO

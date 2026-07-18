@@ -79,6 +79,135 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Module 2 — Resource Server (product-service)",
+      "description": "A Spring Boot resource server that validates Keycloak JWTs and enforces roles.\n\nRun a token request first (it auto-saves {{access_token}}), then call the API. Use alice for read, bob for admin writes.\n\nNOTE: web-app has direct access grants (ROPC) enabled ONLY to make CLI/Postman testing easy. Real browser clients use Authorization Code + PKCE (Module 3).",
+      "item": [
+        {
+          "name": "Token — Password Grant (alice / app_user)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "if (j.access_token) { pm.environment.set('access_token', j.access_token); console.log('Saved alice token'); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "grant_type", "value": "password", "type": "text" },
+                { "key": "client_id", "value": "{{webAppClientId}}", "type": "text" },
+                { "key": "username", "value": "alice", "type": "text" },
+                { "key": "password", "value": "password", "type": "text" },
+                { "key": "scope", "value": "openid", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": ["{{baseUrl}}"],
+              "path": ["realms", "{{realm}}", "protocol", "openid-connect", "token"]
+            },
+            "description": "Resource Owner Password Credentials grant (deprecated in OAuth2.1; enabled here only for easy testing). Gets alice's token (app_user role)."
+          },
+          "response": []
+        },
+        {
+          "name": "Token — Password Grant (bob / app_admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "if (j.access_token) { pm.environment.set('access_token', j.access_token); console.log('Saved bob token'); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "grant_type", "value": "password", "type": "text" },
+                { "key": "client_id", "value": "{{webAppClientId}}", "type": "text" },
+                { "key": "username", "value": "bob", "type": "text" },
+                { "key": "password", "value": "password", "type": "text" },
+                { "key": "scope", "value": "openid", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": ["{{baseUrl}}"],
+              "path": ["realms", "{{realm}}", "protocol", "openid-connect", "token"]
+            },
+            "description": "Gets bob's token (app_user + app_admin roles) for testing admin-only writes."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/products (any authenticated user)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{productServiceUrl}}/api/products",
+              "host": ["{{productServiceUrl}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Requires ROLE_app_user or ROLE_app_admin (@PreAuthorize). 401 without a token, 200 with alice or bob."
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/products (app_admin only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Webcam\",\n  \"category\": \"peripherals\",\n  \"price\": 59.99\n}"
+            },
+            "url": {
+              "raw": "{{productServiceUrl}}/api/products",
+              "host": ["{{productServiceUrl}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Requires ROLE_app_admin. 403 with alice's token, 200 with bob's token. Demonstrates method-level authorization."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/products/whoami",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{productServiceUrl}}/api/products/whoami",
+              "host": ["{{productServiceUrl}}"],
+              "path": ["api", "products", "whoami"]
+            },
+            "description": "Echoes claims from the validated JWT (subject, username, audience, issuer). Proves the token was accepted and parsed."
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
