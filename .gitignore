@@ -1,5 +1,6 @@
 # --- Private / not for the public repo ---
 Keycloak-Developer-JD.txt
+scripts/**/.tokens.json
 *.local
 .env
 *.env.local

@@ -94,7 +94,9 @@
                 "exec": [
                   "pm.test('200 OK', () => pm.response.to.have.status(200));",
                   "const j = pm.response.json();",
-                  "if (j.access_token) { pm.environment.set('access_token', j.access_token); console.log('Saved alice token'); }"
+                  "if (j.access_token) { pm.environment.set('access_token', j.access_token); }",
+                  "if (j.refresh_token) { pm.environment.set('refresh_token', j.refresh_token); }",
+                  "console.log('Saved alice tokens');"
                 ]
               }
             }
@@ -131,7 +133,9 @@
                 "exec": [
                   "pm.test('200 OK', () => pm.response.to.have.status(200));",
                   "const j = pm.response.json();",
-                  "if (j.access_token) { pm.environment.set('access_token', j.access_token); console.log('Saved bob token'); }"
+                  "if (j.access_token) { pm.environment.set('access_token', j.access_token); }",
+                  "if (j.refresh_token) { pm.environment.set('refresh_token', j.refresh_token); }",
+                  "console.log('Saved bob tokens');"
                 ]
               }
             }
@@ -204,6 +208,132 @@
               "path": ["api", "products", "whoami"]
             },
             "description": "Echoes claims from the validated JWT (subject, username, audience, issuer). Proves the token was accepted and parsed."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Module 3 — OAuth2 / OIDC Flows",
+      "description": "Every flow by hand. For the interactive Authorization Code + PKCE login, the easiest path in Postman is the request's Authorization tab (Type: OAuth 2.0, Grant: Authorization Code with PKCE). The requests below cover the token exchange, refresh, introspection and logout so you can run and read each step.\n\nRun order to see revocation: get tokens (Module 2 password grant, or the PKCE exchange) -> Introspect (active=true) -> Logout -> Introspect (active=false).",
+      "item": [
+        {
+          "name": "1. Authorize — open login page (Auth Code + PKCE)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/realms/{{realm}}/protocol/openid-connect/auth?client_id={{webAppClientId}}&response_type=code&scope=openid&redirect_uri=http://localhost:8081/callback&state=xyz123&code_challenge=CHALLENGE&code_challenge_method=S256",
+              "host": ["{{baseUrl}}"],
+              "path": ["realms", "{{realm}}", "protocol", "openid-connect", "auth"],
+              "query": [
+                { "key": "client_id", "value": "{{webAppClientId}}" },
+                { "key": "response_type", "value": "code" },
+                { "key": "scope", "value": "openid" },
+                { "key": "redirect_uri", "value": "http://localhost:8081/callback" },
+                { "key": "state", "value": "xyz123" },
+                { "key": "code_challenge", "value": "CHALLENGE" },
+                { "key": "code_challenge_method", "value": "S256" }
+              ]
+            },
+            "description": "Open this in a browser to see Keycloak's login page. After login it redirects to redirect_uri?code=... Copy that code into {{authCode}} and set {{codeVerifier}} to the verifier whose SHA-256 you put in code_challenge. (Or just use the Authorization tab's built-in PKCE.) The scripts/module-03/auth-code-pkce.sh does this whole dance headlessly."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Token — Authorization Code + PKCE (exchange)",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "const j = pm.response.json();",
+              "if (j.access_token) pm.environment.set('access_token', j.access_token);",
+              "if (j.refresh_token) pm.environment.set('refresh_token', j.refresh_token);"
+            ] } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "grant_type", "value": "authorization_code", "type": "text" },
+              { "key": "client_id", "value": "{{webAppClientId}}", "type": "text" },
+              { "key": "code", "value": "{{authCode}}", "type": "text" },
+              { "key": "redirect_uri", "value": "http://localhost:8081/callback", "type": "text" },
+              { "key": "code_verifier", "value": "{{codeVerifier}}", "type": "text" }
+            ] },
+            "url": {
+              "raw": "{{baseUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": ["{{baseUrl}}"],
+              "path": ["realms", "{{realm}}", "protocol", "openid-connect", "token"]
+            },
+            "description": "Exchanges the one-time code + code_verifier for tokens. The verifier proves the caller is the same party that started the flow (PKCE). Saves access + refresh tokens."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Refresh Token",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "const j = pm.response.json();",
+              "if (j.access_token) pm.environment.set('access_token', j.access_token);",
+              "if (j.refresh_token) pm.environment.set('refresh_token', j.refresh_token);",
+              "console.log('Rotated tokens saved');"
+            ] } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "grant_type", "value": "refresh_token", "type": "text" },
+              { "key": "client_id", "value": "{{webAppClientId}}", "type": "text" },
+              { "key": "refresh_token", "value": "{{refresh_token}}", "type": "text" }
+            ] },
+            "url": {
+              "raw": "{{baseUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": ["{{baseUrl}}"],
+              "path": ["realms", "{{realm}}", "protocol", "openid-connect", "token"]
+            },
+            "description": "Trades the refresh token for a fresh access token. Keycloak rotates the refresh token, so the old one becomes invalid."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Introspect Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "backend-worker", "type": "string" },
+                { "key": "password", "value": "{{backendWorkerSecret}}", "type": "string" }
+              ]
+            },
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "token", "value": "{{access_token}}", "type": "text" }
+            ] },
+            "url": {
+              "raw": "{{baseUrl}}/realms/{{realm}}/protocol/openid-connect/token/introspect",
+              "host": ["{{baseUrl}}"],
+              "path": ["realms", "{{realm}}", "protocol", "openid-connect", "token", "introspect"]
+            },
+            "description": "A confidential client asks Keycloak whether the token is active. Reflects revocation instantly (unlike local JWT validation). Returns active=false after logout."
+          },
+          "response": []
+        },
+        {
+          "name": "5. Logout (end session)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "client_id", "value": "{{webAppClientId}}", "type": "text" },
+              { "key": "refresh_token", "value": "{{refresh_token}}", "type": "text" }
+            ] },
+            "url": {
+              "raw": "{{baseUrl}}/realms/{{realm}}/protocol/openid-connect/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["realms", "{{realm}}", "protocol", "openid-connect", "logout"]
+            },
+            "description": "Ends the SSO session and revokes the refresh token (204 No Content). Afterwards, Introspect shows active=false — but a locally-validated JWT would still pass until exp."
           },
           "response": []
         }
