@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>web-client — logged in</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 720px; margin: 3rem auto; line-height: 1.6; }
+        code { background: #f4f4f4; padding: 2px 5px; border-radius: 4px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+        td, th { border: 1px solid #ddd; padding: 6px 10px; text-align: left; font-size: .9rem; }
+        a.button { display: inline-block; padding: .5rem 1rem; background: #2b6cb0; color: #fff;
+                   text-decoration: none; border-radius: 6px; margin-right: .5rem; }
+        form { display: inline; }
+        button { padding: .5rem 1rem; border: 0; border-radius: 6px; background:#a0aec0; color:#fff; cursor:pointer; }
+    </style>
+</head>
+<body>
+    <h1>Logged in ✓</h1>
+    <p>Welcome, <strong th:text="${username}">user</strong>
+       (<span th:text="${email}">email</span>).</p>
+    <p>These claims came from the <strong>ID token</strong> Keycloak issued to this client:</p>
+
+    <table>
+        <tr><th>Claim</th><th>Value</th></tr>
+        <tr th:each="c : ${claims}">
+            <td th:text="${c.key}">claim</td>
+            <td th:text="${c.value}">value</td>
+        </tr>
+    </table>
+
+    <p style="margin-top:1.5rem;">
+        <a class="button" href="/products">Call product-service with my access token →</a>
+        <form th:action="@{/logout}" method="post"><button type="submit">Logout</button></form>
+    </p>
+</body>
+</html>

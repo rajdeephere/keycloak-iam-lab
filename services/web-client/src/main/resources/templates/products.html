@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>web-client — products</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 720px; margin: 3rem auto; line-height: 1.6; }
+        code { background: #f4f4f4; padding: 2px 5px; border-radius: 4px; word-break: break-all; }
+        table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+        td, th { border: 1px solid #ddd; padding: 6px 10px; text-align: left; }
+        .err { color: #c53030; }
+        a { color: #2b6cb0; }
+    </style>
+</head>
+<body>
+    <h1>product-service response</h1>
+    <p>This page called <code>GET /api/products</code> on <code>product-service</code>,
+       sending the access token obtained for you at login:</p>
+    <p><code th:text="${tokenPreview}">token...</code></p>
+
+    <div th:if="${error}">
+        <p class="err">Call failed: <span th:text="${error}">error</span></p>
+        <p>Is product-service running on :8081?</p>
+    </div>
+
+    <table th:if="${products}">
+        <tr><th>ID</th><th>Name</th><th>Category</th><th>Price</th></tr>
+        <tr th:each="p : ${products}">
+            <td th:text="${p.id}">1</td>
+            <td th:text="${p.name}">name</td>
+            <td th:text="${p.category}">cat</td>
+            <td th:text="${p.price}">0.0</td>
+        </tr>
+    </table>
+
+    <p style="margin-top:1.5rem;"><a href="/me">← back</a></p>
+</body>
+</html>

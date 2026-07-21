@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>web-client — OIDC demo</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 640px; margin: 3rem auto; line-height: 1.6; }
+        code { background: #f4f4f4; padding: 2px 5px; border-radius: 4px; }
+        a.button { display: inline-block; padding: .5rem 1rem; background: #2b6cb0; color: #fff;
+                   text-decoration: none; border-radius: 6px; margin-right: .5rem; }
+    </style>
+</head>
+<body>
+    <h1>web-client</h1>
+    <p>A Spring Boot <strong>OAuth2 client</strong> that logs in via Keycloak using
+       <strong>Authorization Code + PKCE</strong>, then calls <code>product-service</code>
+       with the access token.</p>
+
+    <p>You are not logged in.</p>
+    <a class="button" href="/me">Log in (go to a protected page)</a>
+
+    <p style="margin-top:2rem; color:#666; font-size:.9rem;">
+        Clicking above hits a protected route, so Spring Security redirects you to
+        Keycloak. Log in as <code>alice</code> or <code>bob</code> (password
+        <code>password</code>), and you'll be redirected back here, authenticated.
+    </p>
+</body>
+</html>

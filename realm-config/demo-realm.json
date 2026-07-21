@@ -40,11 +40,13 @@
       "directAccessGrantsEnabled": true,
       "redirectUris": [
         "http://localhost:3000/*",
-        "http://localhost:8081/*"
+        "http://localhost:8081/*",
+        "http://localhost:8082/*"
       ],
       "webOrigins": [
         "http://localhost:3000",
-        "http://localhost:8081"
+        "http://localhost:8081",
+        "http://localhost:8082"
       ],
       "attributes": {
         "pkce.code.challenge.method": "S256"

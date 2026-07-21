@@ -17,7 +17,7 @@ and ships a design doc explaining the *why* and the architectural trade-offs.
 |---|--------|-------|--------|
 | 1 | Keycloak + realm bootstrap | Keycloak config, IAM concepts | ✅ done — [docs](docs/module-01-keycloak-bootstrap.md) |
 | 2 | `product-service` resource server | Spring Boot, REST APIs, OIDC | ✅ done — [docs](docs/module-02-resource-server.md) |
-| 3 | OAuth2/OIDC flows by hand | OAuth2/OIDC flows | todo |
+| 3 | OAuth2/OIDC flows by hand | OAuth2/OIDC flows | ✅ done — [docs](docs/module-03-oauth2-oidc-flows.md) |
 | 4 | Gateway + service-to-service auth | Microservices, IAM integration | todo |
 | 5 | Identity lifecycle via Admin API | Access management | todo |
 
@@ -35,6 +35,7 @@ services/         Spring Boot microservices
 labs/             standalone side labs
 docs/             design docs, architecture decisions & Q&A per module
 postman/          Postman collection + environment (grows each module)
+scripts/          runnable flow scripts (e.g. OAuth2/OIDC flows by hand)
 ```
 
 ## Postman
@@ -49,7 +50,8 @@ requests reuse it. A new folder is added per module.
 | Service | URL | Notes |
 |---------|-----|-------|
 | Keycloak | http://localhost:8085 | 8080 is taken by a local Apache, so Keycloak is published on 8085 |
-| product-service | http://localhost:8081 | Spring Boot resource server |
+| product-service | http://localhost:8081 | Spring Boot resource server (validates tokens) |
+| web-client | http://localhost:8082 | Spring Boot OIDC client (Auth Code + PKCE login) |
 | Postgres | localhost:5432 | Keycloak's database |
 
 ## Running the infra
@@ -63,4 +65,8 @@ docker compose down -v     # stop and wipe data
 # Run the resource server
 cd ../services/product-service
 mvn clean package -DskipTests && java -jar target/product-service-0.0.1-SNAPSHOT.jar
+
+# Run the OIDC web client (Auth Code + PKCE); then open http://localhost:8082
+cd ../web-client
+mvn clean package -DskipTests && java -jar target/web-client-0.0.1-SNAPSHOT.jar
 ```

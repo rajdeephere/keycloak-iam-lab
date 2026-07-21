@@ -1,0 +1,32 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: web-client
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: web-app
+            # PUBLIC client -> no secret. Setting auth method to "none" makes
+            # Spring Security automatically use PKCE for the code exchange.
+            client-authentication-method: none
+            authorization-grant-type: authorization_code
+            scope: openid,profile,email
+            # Default callback Spring listens on. Must be a registered redirect URI.
+            redirect-uri: "{baseUrl}/login/oauth2/code/keycloak"
+        provider:
+          keycloak:
+            # Discovery drives everything (auth, token, jwks, userinfo, end-session).
+            issuer-uri: http://localhost:8085/realms/demo
+            user-name-attribute: preferred_username
+
+# Downstream API this client calls with the user's access token.
+product-service:
+  url: http://localhost:8081
+
+logging:
+  level:
+    org.springframework.security: INFO
