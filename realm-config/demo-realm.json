@@ -109,6 +109,17 @@
           }
         }
       ]
+    },
+    {
+      "clientId": "admin-service",
+      "name": "Admin Service (manages identities via the Admin API)",
+      "description": "Confidential client whose service account holds realm-management roles to CRUD users, roles and sessions.",
+      "enabled": true,
+      "publicClient": false,
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "secret": "admin-service-secret"
     }
   ],
 
@@ -142,6 +153,14 @@
       "enabled": true,
       "serviceAccountClientId": "order-service",
       "realmRoles": ["app_user"]
+    },
+    {
+      "username": "service-account-admin-service",
+      "enabled": true,
+      "serviceAccountClientId": "admin-service",
+      "clientRoles": {
+        "realm-management": ["manage-users", "view-users", "query-users", "view-realm"]
+      }
     }
   ]
 }
