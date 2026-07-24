@@ -29,9 +29,9 @@ and ships a design doc explaining the *why* and the architectural trade-offs.
 
 ## Layout
 ```
-docker/           local infra (Keycloak, Postgres)
+docker/           full stack in one compose file (Keycloak, Postgres, both services)
 realm-config/     exported/importable realm definitions
-services/         Spring Boot microservices
+services/         Spring Boot microservices (each with its own Dockerfile)
 labs/             standalone side labs
 docs/             design docs, architecture decisions & Q&A per module
 postman/          Postman collection + environment (grows each module)
@@ -49,24 +49,27 @@ requests reuse it. A new folder is added per module.
 ## Ports
 | Service | URL | Notes |
 |---------|-----|-------|
-| Keycloak | http://localhost:8085 | 8080 is taken by a local Apache, so Keycloak is published on 8085 |
+| Keycloak | http://localhost:8085 | 8080 is taken by a local Apache; canonical issuer is `host.docker.internal:8085` |
 | product-service | http://localhost:8081 | Spring Boot resource server (validates tokens) |
 | web-client | http://localhost:8082 | Spring Boot OIDC client (Auth Code + PKCE login) |
 | Postgres | localhost:5432 | Keycloak's database |
 
-## Running the infra
+## Running everything (one command)
+The whole stack — Keycloak, Postgres, and both Java services — runs from Compose.
+See [docs/infra-dockerized-stack.md](docs/infra-dockerized-stack.md) for the design.
 ```bash
 cd docker
-docker compose up -d       # start Keycloak + Postgres
+docker compose up -d --build     # build + start all four containers
+docker compose ps                # check status
+# Browser demo:  http://localhost:8082  -> Log in (alice / password) -> Products
 # Admin console: http://localhost:8085  (admin / admin)
-docker compose down        # stop
-docker compose down -v     # stop and wipe data
+docker compose down              # stop (keep data)
+docker compose down -v           # stop and wipe the DB (forces realm re-import)
+```
 
-# Run the resource server
-cd ../services/product-service
+### Running a service on the host instead (for fast iteration)
+Each service also runs as a plain jar; defaults point at `host.docker.internal:8085`.
+```bash
+cd services/product-service
 mvn clean package -DskipTests && java -jar target/product-service-0.0.1-SNAPSHOT.jar
-
-# Run the OIDC web client (Auth Code + PKCE); then open http://localhost:8082
-cd ../web-client
-mvn clean package -DskipTests && java -jar target/web-client-0.0.1-SNAPSHOT.jar
 ```

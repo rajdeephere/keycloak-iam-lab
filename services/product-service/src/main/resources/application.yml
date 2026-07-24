@@ -9,8 +9,10 @@ spring:
       resourceserver:
         jwt:
           # Spring auto-discovers JWKS + validates issuer/signature/exp from this URI.
-          # Keycloak is published on host port 8085 (8080 is taken by a local Apache).
-          issuer-uri: http://localhost:8085/realms/demo
+          # Canonical Keycloak URL is host.docker.internal:8085 so the token issuer
+          # is identical from the host browser and from inside containers. Override
+          # via KEYCLOAK_ISSUER_URI (compose sets it explicitly).
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8085/realms/demo}
 
 # Custom app config: which audience THIS resource server will accept.
 app:

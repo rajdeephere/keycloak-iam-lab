@@ -20,12 +20,14 @@ spring:
         provider:
           keycloak:
             # Discovery drives everything (auth, token, jwks, userinfo, end-session).
-            issuer-uri: http://localhost:8085/realms/demo
+            # Canonical Keycloak URL (see product-service note). Override via env.
+            issuer-uri: ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8085/realms/demo}
             user-name-attribute: preferred_username
 
 # Downstream API this client calls with the user's access token.
+# On-host default is localhost; in compose it's the service name product-service.
 product-service:
-  url: http://localhost:8081
+  url: ${PRODUCT_SERVICE_URL:http://localhost:8081}
 
 logging:
   level:

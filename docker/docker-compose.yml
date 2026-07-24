@@ -33,16 +33,48 @@ services:
       KC_HTTP_ENABLED: "true"
       KC_HOSTNAME_STRICT: "false"
       KC_HEALTH_ENABLED: "true"
+      # Pin the public/frontend URL so the token issuer is IDENTICAL whether
+      # Keycloak is reached from the host browser (localhost:8085) or from other
+      # containers. host.docker.internal resolves on both sides (Docker Desktop),
+      # so every party validates the same iss claim.
+      KC_HOSTNAME: http://host.docker.internal:8085
     ports:
-      # Host 8085 -> container 8080. Host 8080 is taken by a local Apache (httpd),
-      # so we publish Keycloak on 8085 to avoid the port collision.
       - "8085:8080"
     volumes:
       # realm JSONs placed here are imported on first start (--import-realm)
       - ../realm-config:/opt/keycloak/data/import
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       postgres:
         condition: service_healthy
+
+  product-service:
+    build: ../services/product-service
+    container_name: product-service
+    environment:
+      KEYCLOAK_ISSUER_URI: http://host.docker.internal:8085/realms/demo
+    ports:
+      - "8081:8081"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - keycloak
+
+  web-client:
+    build: ../services/web-client
+    container_name: web-client
+    environment:
+      KEYCLOAK_ISSUER_URI: http://host.docker.internal:8085/realms/demo
+      # Reach the resource server by its compose service name on the shared network.
+      PRODUCT_SERVICE_URL: http://product-service:8081
+    ports:
+      - "8082:8082"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - keycloak
+      - product-service
 
 volumes:
   pg_data:
