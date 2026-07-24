@@ -19,7 +19,7 @@ and ships a design doc explaining the *why* and the architectural trade-offs.
 | 2 | `product-service` resource server | Spring Boot, REST APIs, OIDC | ✅ done — [docs](docs/module-02-resource-server.md) |
 | 3 | OAuth2/OIDC flows by hand | OAuth2/OIDC flows | ✅ done — [docs](docs/module-03-oauth2-oidc-flows.md) |
 | 4 | Gateway + service-to-service auth | Microservices, IAM integration | ✅ done — [docs](docs/module-04-gateway-service-to-service.md) |
-| 5 | Identity lifecycle via Admin API | Access management | todo |
+| 5 | Identity lifecycle via Admin API | Access management | ✅ done — [docs](docs/module-05-identity-lifecycle.md) |
 
 ## Side labs (nice-to-haves)
 - **A** — Custom SPI: write one, then remove/replace it
@@ -53,6 +53,7 @@ requests reuse it. A new folder is added per module.
 | gateway | http://localhost:8090 | Spring Cloud Gateway — single entry point, edge JWT check |
 | product-service | http://localhost:8081 | Spring Boot resource server (validates tokens) |
 | order-service | http://localhost:8083 | Resource server; calls product-service (token relay + client credentials) |
+| admin-service | http://localhost:8084 | Wraps the Keycloak Admin API for the identity lifecycle (app_admin only) |
 | web-client | http://localhost:8082 | Spring Boot OIDC client (Auth Code + PKCE login) |
 | Postgres | localhost:5432 | Keycloak's database |
 

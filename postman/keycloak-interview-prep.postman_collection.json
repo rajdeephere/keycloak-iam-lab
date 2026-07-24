@@ -400,6 +400,102 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Module 5 — Identity Lifecycle (Admin API)",
+      "description": "admin-service (via the gateway) manages identities. You must call these as an app_admin (bob) — get bob's token with the Module 2 'Token — Password Grant (bob)' request first.\n\nFlow: Create user -> copy the returned id into {{newUserId}} -> Assign role -> Disable / Logout / Delete.",
+      "item": [
+        {
+          "name": "Create user (JOINER)",
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "const j = pm.response.json();",
+              "if (j.id) { pm.environment.set('newUserId', j.id); console.log('Saved newUserId=' + j.id); }"
+            ] } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"carol\",\n  \"email\": \"carol@demo.local\",\n  \"firstName\": \"Carol\",\n  \"lastName\": \"New\",\n  \"password\": \"carolpass\"\n}" },
+            "url": {
+              "raw": "{{gatewayUrl}}/api/admin/users",
+              "host": ["{{gatewayUrl}}"],
+              "path": ["api", "admin", "users"]
+            },
+            "description": "Provision a new user. Requires app_admin (bob). Saves the new id to {{newUserId}}."
+          },
+          "response": []
+        },
+        {
+          "name": "List users (search)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{gatewayUrl}}/api/admin/users?search=carol",
+              "host": ["{{gatewayUrl}}"],
+              "path": ["api", "admin", "users"],
+              "query": [{ "key": "search", "value": "carol" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Assign role app_user (MOVER)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{gatewayUrl}}/api/admin/users/{{newUserId}}/roles/app_user",
+              "host": ["{{gatewayUrl}}"],
+              "path": ["api", "admin", "users", "{{newUserId}}", "roles", "app_user"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Disable user (LEAVER soft)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{gatewayUrl}}/api/admin/users/{{newUserId}}/disable",
+              "host": ["{{gatewayUrl}}"],
+              "path": ["api", "admin", "users", "{{newUserId}}", "disable"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Revoke sessions (LEAVER instant)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{gatewayUrl}}/api/admin/users/{{newUserId}}/logout",
+              "host": ["{{gatewayUrl}}"],
+              "path": ["api", "admin", "users", "{{newUserId}}", "logout"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete user (cleanup)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{gatewayUrl}}/api/admin/users/{{newUserId}}",
+              "host": ["{{gatewayUrl}}"],
+              "path": ["api", "admin", "users", "{{newUserId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
