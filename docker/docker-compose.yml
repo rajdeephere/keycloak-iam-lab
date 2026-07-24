@@ -92,6 +92,20 @@ services:
       - keycloak
       - product-service
 
+  admin-service:
+    build: ../services/admin-service
+    container_name: admin-service
+    environment:
+      KEYCLOAK_ISSUER_URI: http://host.docker.internal:8085/realms/demo
+      KEYCLOAK_BASE_URL: http://host.docker.internal:8085
+      ADMIN_SERVICE_SECRET: admin-service-secret
+    ports:
+      - "8084:8084"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - keycloak
+
   gateway:
     build: ../services/gateway
     container_name: gateway
@@ -100,6 +114,7 @@ services:
       # Downstream routes resolved by compose service name.
       PRODUCT_SERVICE_URL: http://product-service:8081
       ORDER_SERVICE_URL: http://order-service:8083
+      ADMIN_SERVICE_URL: http://admin-service:8084
     ports:
       - "8090:8090"
     extra_hosts:
@@ -108,6 +123,7 @@ services:
       - keycloak
       - product-service
       - order-service
+      - admin-service
 
 volumes:
   pg_data:
