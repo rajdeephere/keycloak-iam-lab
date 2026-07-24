@@ -86,6 +86,29 @@
           }
         }
       ]
+    },
+    {
+      "clientId": "order-service",
+      "name": "Order Service (confidential, service account)",
+      "description": "Resource server that also calls product-service via client-credentials (M2M).",
+      "enabled": true,
+      "publicClient": false,
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "secret": "order-service-secret",
+      "protocolMappers": [
+        {
+          "name": "product-service-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "product-service",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
     }
   ],
 
@@ -113,6 +136,12 @@
         { "type": "password", "value": "password", "temporary": false }
       ],
       "realmRoles": ["app_user", "app_admin"]
+    },
+    {
+      "username": "service-account-order-service",
+      "enabled": true,
+      "serviceAccountClientId": "order-service",
+      "realmRoles": ["app_user"]
     }
   ]
 }

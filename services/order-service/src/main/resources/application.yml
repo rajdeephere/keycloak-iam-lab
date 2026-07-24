@@ -1,0 +1,44 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: order-service
+  security:
+    oauth2:
+      # --- As a RESOURCE SERVER: validate incoming user tokens ---
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8085/realms/demo}
+      # --- As a CLIENT: fetch our own token for machine-to-machine calls ---
+      client:
+        registration:
+          order-service:
+            provider: keycloak
+            client-id: order-service
+            client-secret: ${ORDER_SERVICE_SECRET:order-service-secret}
+            authorization-grant-type: client_credentials
+        provider:
+          keycloak:
+            issuer-uri: ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8085/realms/demo}
+
+app:
+  security:
+    expected-audience: product-service
+
+# Downstream service this one calls.
+product-service:
+  url: ${PRODUCT_SERVICE_URL:http://localhost:8081}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    org.springframework.security: INFO
