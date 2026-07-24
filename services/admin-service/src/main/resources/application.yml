@@ -1,0 +1,41 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: admin-service
+  security:
+    oauth2:
+      # As a RESOURCE SERVER: validate the calling admin's token.
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8085/realms/demo}
+      # As a CLIENT: get our own token (with realm-management roles) for the Admin API.
+      client:
+        registration:
+          admin-service:
+            provider: keycloak
+            client-id: admin-service
+            client-secret: ${ADMIN_SERVICE_SECRET:admin-service-secret}
+            authorization-grant-type: client_credentials
+        provider:
+          keycloak:
+            issuer-uri: ${KEYCLOAK_ISSUER_URI:http://host.docker.internal:8085/realms/demo}
+
+keycloak:
+  # Base URL (no /realms/...) used to build Admin API paths: {base}/admin/realms/{realm}/...
+  base-url: ${KEYCLOAK_BASE_URL:http://host.docker.internal:8085}
+  realm: demo
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    org.springframework.security: INFO
