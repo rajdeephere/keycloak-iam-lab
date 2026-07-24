@@ -18,7 +18,7 @@ and ships a design doc explaining the *why* and the architectural trade-offs.
 | 1 | Keycloak + realm bootstrap | Keycloak config, IAM concepts | ✅ done — [docs](docs/module-01-keycloak-bootstrap.md) |
 | 2 | `product-service` resource server | Spring Boot, REST APIs, OIDC | ✅ done — [docs](docs/module-02-resource-server.md) |
 | 3 | OAuth2/OIDC flows by hand | OAuth2/OIDC flows | ✅ done — [docs](docs/module-03-oauth2-oidc-flows.md) |
-| 4 | Gateway + service-to-service auth | Microservices, IAM integration | todo |
+| 4 | Gateway + service-to-service auth | Microservices, IAM integration | ✅ done — [docs](docs/module-04-gateway-service-to-service.md) |
 | 5 | Identity lifecycle via Admin API | Access management | todo |
 
 ## Side labs (nice-to-haves)
@@ -50,7 +50,9 @@ requests reuse it. A new folder is added per module.
 | Service | URL | Notes |
 |---------|-----|-------|
 | Keycloak | http://localhost:8085 | 8080 is taken by a local Apache; canonical issuer is `host.docker.internal:8085` |
+| gateway | http://localhost:8090 | Spring Cloud Gateway — single entry point, edge JWT check |
 | product-service | http://localhost:8081 | Spring Boot resource server (validates tokens) |
+| order-service | http://localhost:8083 | Resource server; calls product-service (token relay + client credentials) |
 | web-client | http://localhost:8082 | Spring Boot OIDC client (Auth Code + PKCE login) |
 | Postgres | localhost:5432 | Keycloak's database |
 

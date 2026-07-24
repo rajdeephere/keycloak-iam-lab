@@ -338,6 +338,68 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Module 4 — Gateway + Service-to-Service",
+      "description": "All traffic goes through the gateway (:8090). The gateway validates the token at the edge and routes to product-service or order-service. order-service then calls product-service via token relay (/api/orders) or client credentials (/api/orders/sync).\n\nGet a token first (Module 2 password grant saves {{access_token}}).",
+      "item": [
+        {
+          "name": "Gateway -> products (no token = 401 at edge)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gatewayUrl}}/api/products",
+              "host": ["{{gatewayUrl}}"],
+              "path": ["api", "products"]
+            },
+            "description": "No Authorization header. The gateway rejects it at the edge with 401 before routing."
+          },
+          "response": []
+        },
+        {
+          "name": "Gateway -> products (routed to product-service)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{gatewayUrl}}/api/products",
+              "host": ["{{gatewayUrl}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Gateway validates the token at the edge, then proxies to product-service (forwarding the Authorization header)."
+          },
+          "response": []
+        },
+        {
+          "name": "Gateway -> orders (TOKEN RELAY)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{gatewayUrl}}/api/orders",
+              "host": ["{{gatewayUrl}}"],
+              "path": ["api", "orders"]
+            },
+            "description": "order-service forwards YOUR token to product-service. Response 'mode' shows it called product-service as the logged-in user."
+          },
+          "response": []
+        },
+        {
+          "name": "Gateway -> orders/sync (CLIENT CREDENTIALS)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{gatewayUrl}}/api/orders/sync",
+              "host": ["{{gatewayUrl}}"],
+              "path": ["api", "orders", "sync"]
+            },
+            "description": "order-service authenticates as its OWN service account (client_credentials) and calls product-service. Response 'mode' shows service-account 'order-service'."
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
